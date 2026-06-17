@@ -1,3 +1,7 @@
+const API_BASE = window.location.origin.includes('3000') 
+  ? '' 
+  : 'http://localhost:3000'; // fallback to local backend if frontend is hosted on separate origin
+
 let currentRole = 'volunteer'; // Default selection
 let currentUser = null;
 let events = [];
@@ -39,10 +43,11 @@ async function handleLogin(event) {
   submitBtn.innerText = 'Signing In...';
 
   try {
-    const response = await fetch(endpoint, {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email, password }),
+      credentials: 'include'
     });
     
     const result = await response.json();
@@ -101,7 +106,9 @@ async function loadEvents() {
   grid.innerHTML = '';
 
   try {
-    const response = await fetch('/api/events');
+    const response = await fetch(`${API_BASE}/api/events`, {
+      credentials: 'include'
+    });
     const result = await response.json();
     if (!response.ok) {
       throw new Error(result.message || 'Could not fetch events');
@@ -168,9 +175,10 @@ function createEventCard(event) {
 // Register volunteer to event
 async function registerForEvent(eventId) {
   try {
-    const response = await fetch(`/api/events/registration/${eventId}`, {
+    const response = await fetch(`${API_BASE}/api/events/registration/${eventId}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
     });
     const result = await response.json();
     if (!response.ok) {
@@ -202,7 +210,9 @@ async function viewRegistrations(eventId, eventTitle) {
   list.innerHTML = '';
 
   try {
-    const response = await fetch(`/api/events/registration/${eventId}`);
+    const response = await fetch(`${API_BASE}/api/events/registration/${eventId}`, {
+      credentials: 'include'
+    });
     const result = await response.json();
     if (!response.ok) {
       throw new Error(result.message || 'Could not load registrations');
@@ -249,10 +259,11 @@ async function handleCreateEvent(event) {
   const status = document.getElementById('event-status').value;
 
   try {
-    const response = await fetch('/api/events', {
+    const response = await fetch(`${API_BASE}/api/events`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description, location, date, capacity, status })
+      body: JSON.stringify({ title, description, location, date, capacity, status }),
+      credentials: 'include'
     });
     
     const result = await response.json();
@@ -273,8 +284,9 @@ async function handleCreateEvent(event) {
 // Logout session
 async function handleLogout() {
   try {
-    const response = await fetch('/api/auth/logout', {
-      method: 'POST'
+    const response = await fetch(`${API_BASE}/api/auth/logout`, {
+      method: 'POST',
+      credentials: 'include'
     });
     
     if (!response.ok) {

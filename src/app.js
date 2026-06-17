@@ -1,6 +1,7 @@
 require('dotenv').config();
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const cors = require('cors');
 
 
 const volunteerRoutes = require("./routes/volunteer.js")
@@ -20,6 +21,10 @@ const app = express()
 console.log(process.env.DB_PASSWORD); // should print your password, not undefined
 
 const port  = process.env.PORT
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  credentials: true
+}));
 app.use(express.json())
 app.use(express.urlencoded({extended:false}))
 app.use(cookieParser());
