@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Volunteer Hub | Dashboard</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  
+  <!-- Main Toast Notification -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Outer Glass Wrapper -->
+  <div class="app-container">
+    
+    <!-- 1. Authentication View -->
+    <main id="auth-view" class="auth-card">
+      <div class="brand">
+        <div class="logo-icon">🤝</div>
+        <h1>Volunteer Hub</h1>
+        <p>Connecting hands, changing lives.</p>
+      </div>
+
+      <!-- Tab Switchers -->
+      <div class="tabs">
+        <button id="tab-volunteer" class="tab-btn active" onclick="switchTab('volunteer')">Volunteer Login</button>
+        <button id="tab-admin" class="tab-btn" onclick="switchTab('admin')">Admin Login</button>
+      </div>
+
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="input-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" required placeholder="name@example.com">
+        </div>
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-primary" id="login-submit-btn">Sign In</button>
+      </form>
+    </main>
+
+    <!-- 2. Dashboard View (hidden initially) -->
+    <div id="dashboard-view" class="dashboard-layout hidden">
+      
+      <!-- Top Navigation bar -->
+      <header class="navbar">
+        <div class="brand-small">
+          <span class="logo-icon-small">🤝</span>
+          <h2>Volunteer Hub</h2>
+        </div>
+        <div class="user-profile">
+          <span class="badge" id="user-role-badge">Role</span>
+          <span class="user-name" id="user-display-name">Guest User</span>
+          <button class="btn btn-danger btn-sm" onclick="handleLogout()">Logout</button>
+        </div>
+      </header>
+
+      <!-- Main Dashboard Grid -->
+      <main class="dashboard-grid">
+        
+        <!-- Left Panel: Event Creation (Admin Only) or Stats -->
+        <section class="control-panel">
+          
+          <!-- Admin-Only Panel: Create Event Form -->
+          <div id="admin-create-event-card" class="panel-card hidden">
+            <h3>Create New Event</h3>
+            <p class="panel-subtext">Publish a new volunteering event opportunity.</p>
+            
+            <form id="create-event-form" onsubmit="handleCreateEvent(event)">
+              <div class="input-group">
+                <label for="event-title">Event Title</label>
+                <input type="text" id="event-title" required placeholder="e.g. Park Cleanup Campaign">
+              </div>
+              <div class="input-group">
+                <label for="event-description">Description</label>
+                <textarea id="event-description" required rows="3" placeholder="Describe what volunteers will be doing..."></textarea>
+              </div>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="event-location">Location</label>
+                  <input type="text" id="event-location" required placeholder="e.g. Central Park">
+                </div>
+                <div class="input-group">
+                  <label for="event-date">Date & Time</label>
+                  <input type="datetime-local" id="event-date" required>
+                </div>
+              </div>
+              <div class="input-row">
+                <div class="input-group">
+                  <label for="event-capacity">Capacity (Volunteers)</label>
+                  <input type="number" id="event-capacity" min="1" required placeholder="e.g. 50">
+                </div>
+                <div class="input-group">
+                  <label for="event-status">Initial Status</label>
+                  <select id="event-status">
+                    <option value="upcoming">Upcoming</option>
+                    <option value="ongoing">Ongoing</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-success w-100">Publish Event</button>
+            </form>
+          </div>
+
+          <!-- General Stats/Info Card (For both) -->
+          <div class="panel-card info-card">
+            <h3>Welcome to your Hub!</h3>
+            <p>Use this workspace to explore volunteering opportunities, check capacities, and register directly to active events.</p>
+            <div class="quick-stats">
+              <div class="stat-box">
+                <span class="stat-num" id="total-events-count">0</span>
+                <span class="stat-label">Events</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-num" id="active-registrations-count">0</span>
+                <span class="stat-label">Registrations</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Right Panel: Events Explorer -->
+        <section class="events-panel">
+          <div class="panel-header">
+            <h3>Active Volunteering Events</h3>
+            <span class="counter-badge" id="event-list-badge">0 upcoming</span>
+          </div>
+
+          <div id="events-loader" class="loader">Loading events...</div>
+          <div id="events-grid" class="events-grid-layout">
+            <!-- Dynamic Event Cards will be injected here -->
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Registrations Modal (Admin View) -->
+      <div id="registrations-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+          <div class="modal-header">
+            <div>
+              <h3 id="modal-event-title">Event Registrations</h3>
+              <p class="modal-subtext" id="modal-event-desc">Loading registrations...</p>
+            </div>
+            <button class="close-modal-btn" onclick="closeRegistrationsModal()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div id="registrations-loader" class="loader">Loading registrations...</div>
+            <table class="registrations-table" id="registrations-table">
+              <thead>
+                <tr>
+                  <th>Volunteer ID</th>
+                  <th>Registered At</th>
+                </tr>
+              </thead>
+              <tbody id="registrations-list">
+                <!-- Registration rows injected here -->
+              </tbody>
+            </table>
+            <div id="no-registrations-msg" class="no-data hidden">No volunteers registered yet.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- JS Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
